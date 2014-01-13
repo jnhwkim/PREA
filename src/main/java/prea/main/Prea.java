@@ -554,13 +554,16 @@ public class Prea {
 			String line;
 			int userNo = 0; // sequence number of each user
 			int attributeCount = 0;
+			int[] indexMap = new int[17770]; // index to movieID
+			int order = 0;
+			int maxIndex = -1;
 			
 			maxValue = -1;
 			minValue = 99999;
 			
 			// Read attributes:
 			while((line = buffer.readLine()) != null && !line.equals("TT_EOF")) {
-				if (line.contains("@ATTRIBUTE")) {
+				if (line.contains("@attribute")) {
 					String name;
 					//String type;
 					
@@ -579,11 +582,15 @@ public class Prea {
 					//columnName[lineNo] = name;
 					tmpColumnName.add(name);
 					attributeCount++;
+					int attributeNameInt = Integer.parseInt(name);
+					indexMap[order++] = attributeNameInt;
+					if (maxIndex < attributeNameInt)
+					  maxIndex = attributeNameInt;
 				}
-				else if (line.contains("@RELATION")) {
+				else if (line.contains("@relation")) {
 					// do nothing
 				}
-				else if (line.contains("@DATA")) {
+				else if (line.contains("@data")) {
 					// This is the end of attribute section!
 					break;
 				}
@@ -593,7 +600,7 @@ public class Prea {
 			}
 			
 			// Set item count to data structures:
-			itemCount = attributeCount - 1;
+			itemCount = maxIndex;
 			columnName = new String[attributeCount];
 			tmpColumnName.toArray(columnName);
 			
@@ -617,7 +624,7 @@ public class Prea {
 
 						// movieID starting from 1.
 						int movieID, rate; 						
-						movieID = index++;
+						movieID = indexMap[index];
 						rate = Integer.parseInt(token);
 						
 						if (rate > maxValue) {
@@ -629,6 +636,7 @@ public class Prea {
 						
 						(itemRateCount[movieID])++;
 						rateMatrix.setValue(userNo, movieID, rate);
+						index++;
 					}
 				}
 			}
@@ -640,6 +648,10 @@ public class Prea {
 			for (int i = 1; i <= itemCount; i++) {
 				rateMatrix.getColRef(i).setLength(userCount+1);
 			}
+			
+			// Check the rating matrix
+			// System.out.println("2 == " + rateMatrix.getValue(863, 1680) + "?");
+			// System.out.println("3 == " + rateMatrix.getValue(916, 1682) + "?");
 			
 			System.out.println ("Data File\t" + dataFileName);
 			System.out.println ("User Count\t" + userCount);
