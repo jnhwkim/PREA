@@ -593,7 +593,7 @@ public class Prea {
 			}
 			
 			// Set item count to data structures:
-			itemCount = (attributeCount - 1)/2;
+			itemCount = attributeCount - 1;
 			columnName = new String[attributeCount];
 			tmpColumnName.toArray(columnName);
 			
@@ -603,39 +603,32 @@ public class Prea {
 			// Read data:
 			while((line = buffer.readLine()) != null && !line.equals("TT_EOF")) {
 				if (line.length() > 0) {
-					line = line.substring(1, line.length() - 1);
+					line = line.substring(0, line.length());
 					
 					StringTokenizer st = new StringTokenizer (line, ",");
 					
+					// First index is User ID starting from 1.
+					st.nextToken();
+					userNo++;
+					int index = 1;
+					
 					while (st.hasMoreTokens()) {
 						String token = st.nextToken().trim();
-						int i = token.indexOf(" ");
+
+						// movieID starting from 1.
+						int movieID, rate; 						
+						movieID = index++;
+						rate = Integer.parseInt(token);
 						
-						int movieID, rate;
-						int index = Integer.parseInt(token.substring(0, i));
-						String data = token.substring(i+1);
+						if (rate > maxValue) {
+							maxValue = rate;
+						}
+						else if (rate < minValue) {
+							minValue = rate;
+						}
 						
-						if (index == 0) { // User ID
-							//int userID = Integer.parseInt(data);
-							userNo++;
-						}
-						else if (data.length() == 1) { // Rate
-							movieID = index;
-							rate = Integer.parseInt(data);
-							
-							if (rate > maxValue) {
-								maxValue = rate;
-							}
-							else if (rate < minValue) {
-								minValue = rate;
-							}
-							
-							(itemRateCount[movieID])++;
-							rateMatrix.setValue(userNo, movieID, rate);
-						}
-						else { // Date
-							// Do not use
-						}
+						(itemRateCount[movieID])++;
+						rateMatrix.setValue(userNo, movieID, rate);
 					}
 				}
 			}
