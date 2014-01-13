@@ -228,7 +228,8 @@ public class EvaluationMetrics {
 			SparseVector predictedRateList = predicted.getRowRef(u);
 			
 			if (realRateList.itemCount() != predictedRateList.itemCount()) {
-				System.out.print("Error: The number of test items and predicted items does not match!");
+				System.out.print("Error: The number of test items and predicted items does not match! (" + 
+				    realRateList.itemCount() + "/" + predictedRateList.itemCount() + ")");
 				continue;
 			}
 			
