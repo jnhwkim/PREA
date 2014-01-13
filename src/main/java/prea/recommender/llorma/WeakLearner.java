@@ -194,11 +194,11 @@ public class WeakLearner extends Thread {
 							
 							userFeatures.setValue(u, r, Fus + learningRate*(err*Gis*weight - regularizer*Fus));
 							if(Double.isNaN(Fus + learningRate*(err*Gis*weight - regularizer*Fus))) {
-								System.out.println("a");
+								//System.out.println("a");
 							}
 							itemFeatures.setValue(r, i, Gis + learningRate*(err*Fus*weight - regularizer*Gis));
 							if(Double.isNaN(Gis + learningRate*(err*Fus*weight - regularizer*Gis))) {
-								System.out.println("b");
+								//System.out.println("b");
 							}
 						}
 					}
