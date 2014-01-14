@@ -45,7 +45,8 @@ public class EvaluationMetrics {
 	/** Rank-based 0/1-loss */
 	private double rankZeroOneError;
  
-
+	  /** IREvaluator (Precision/Recall/F1Measure) */
+	  private IREvaluator irEval;
     /** Mean Absoulte Error (MAE) */
     private double mae;
     /** Mean Squared Error (MSE) */
@@ -75,7 +76,7 @@ public class EvaluationMetrics {
 		predicted = p;
 		maxValue = max;
 		minValue = min;
-		recommendCount = 10;
+		recommendCount = 5;
 		halflife = 5;
 		
 		build();
@@ -220,6 +221,7 @@ public class EvaluationMetrics {
 		int testItemCount = 0;
 		double rScoreSum = 0.0;
 		double rMaxSum = 0;
+		irEval = new IREvaluator();
 		
 		for (int u = 1; u <= userCount; u++) {
 			testUserCount++;
@@ -227,21 +229,43 @@ public class EvaluationMetrics {
 			SparseVector realRateList = testMatrix.getRowRef(u);
 			SparseVector predictedRateList = predicted.getRowRef(u);
 			
-			if (realRateList.itemCount() != predictedRateList.itemCount()) {
-				System.out.print("Error: The number of test items and predicted items does not match! (" + 
-				    realRateList.itemCount() + "/" + predictedRateList.itemCount() + ")");
-				continue;
-			}
+//			if (realRateList.itemCount() != predictedRateList.itemCount()) {
+//				System.out.print("Error: The number of test items and predicted items does not match! (" + 
+//				    realRateList.itemCount() + "/" + predictedRateList.itemCount() + ")");
+//				continue;
+//			}
 			
 			if (realRateList.itemCount() > 0) {
-				int[] realRateIndex = realRateList.indexList();
+			  int[] realRateIndex = realRateList.indexList();
 				double[] realRateValue = realRateList.valueList();
 				int[] predictedRateIndex = predictedRateList.indexList();
 				double[] predictedRateValue = predictedRateList.valueList();
 
 				// k-largest rating value arrays are sorted here:
-				Sort.kLargest(predictedRateValue, predictedRateIndex, 0, predictedRateIndex.length-1, recommendCount);
+			  Sort.kLargest(predictedRateValue, predictedRateIndex, 0, predictedRateIndex.length-1, recommendCount);
 				Sort.kLargest(realRateValue, realRateIndex, 0, predictedRateIndex.length-1, recommendCount);
+				
+				// Top-n
+				realRateList = new SparseVector(realRateList.length());
+				predictedRateList = new SparseVector(predictedRateList.length());
+				
+				for (int i = 0; i < recommendCount; i++) {
+				  if (i < predictedRateIndex.length && 
+				      i < realRateIndex.length) {
+				    realRateList.setValue(realRateIndex[i], realRateValue[i]);
+				    predictedRateList.setValue(predictedRateIndex[i], predictedRateValue[i]);
+				  }
+				}
+				
+				// re-get the lists
+				realRateIndex = realRateList.indexList();
+				realRateValue = realRateList.valueList();
+				predictedRateIndex = predictedRateList.indexList();
+				predictedRateValue = predictedRateList.valueList();
+        
+        // k-largest rating value arrays are sorted here:
+        Sort.kLargest(predictedRateValue, predictedRateIndex, 0, predictedRateIndex.length-1, recommendCount);
+        Sort.kLargest(realRateValue, realRateIndex, 0, predictedRateIndex.length-1, recommendCount);
 
 				int r = 1;
 				double rScore = 0.0;
@@ -254,6 +278,11 @@ public class EvaluationMetrics {
 					mse += Math.pow(realRate - predictedRate, 2);
 					asymmetricLoss += Loss.asymmetricLoss(realRate, predictedRate, minValue, maxValue);
 					testItemCount++;
+					
+					// Precision / Recall / F1Measure
+					boolean predictValue = predictedRate >= 4 ? true : false;
+					boolean actualValue = realRate >= 4 ? true : false;
+					irEval.addInstance(predictValue, actualValue);
 					
 					// Half-life evaluation:
 					if (r <= recommendCount) {
@@ -369,7 +398,10 @@ public class EvaluationMetrics {
 	}
 	
 	public String printOneLine() {
-		return String.format("%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f",
+		return String.format("%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f",
+		    this.irEval.getPrecision(),
+        this.irEval.getRecall(),
+        this.irEval.getF1Measure(),
 				this.getMAE(),
 				this.getRMSE(),
 				this.getAsymmetricLoss(),
@@ -394,7 +426,7 @@ public class EvaluationMetrics {
 	}
 	
 	public static String printTitle() {
-		return "=============================================================================================================\r\nName\tMAE\tRMSE\tAsymm\tHLU\tNDCG\tKendall\tSpear";
+		return "=============================================================================================================\r\nName\tPreci.\tRecall\tF1 \tMAE\tRMSE\tAsymm\tHLU\tNDCG\tKendall\tSpear";
 	}
 	
 	public static String printRankTitle() {
