@@ -229,11 +229,11 @@ public class EvaluationMetrics {
 			SparseVector realRateList = testMatrix.getRowRef(u);
 			SparseVector predictedRateList = predicted.getRowRef(u);
 			
-//			if (realRateList.itemCount() != predictedRateList.itemCount()) {
-//				System.out.print("Error: The number of test items and predicted items does not match! (" + 
-//				    realRateList.itemCount() + "/" + predictedRateList.itemCount() + ")");
-//				continue;
-//			}
+			if (realRateList.itemCount() != predictedRateList.itemCount()) {
+				System.out.println("Error: The number of test items and predicted items does not match! (" + 
+				    realRateList.itemCount() + "/" + predictedRateList.itemCount() + ")");
+				continue;
+			}
 			
 			if (realRateList.itemCount() > 0) {
 			  int[] realRateIndex = realRateList.indexList();
@@ -243,8 +243,8 @@ public class EvaluationMetrics {
 
 				// k-largest rating value arrays are sorted here:
 			  Sort.kLargest(predictedRateValue, predictedRateIndex, 0, predictedRateIndex.length-1, recommendCount);
-				Sort.kLargest(realRateValue, realRateIndex, 0, predictedRateIndex.length-1, recommendCount);
-				
+			  Sort.kLargest(realRateValue, realRateIndex, 0, predictedRateIndex.length-1, recommendCount);
+			  
 				// Top-n
 				realRateList = new SparseVector(realRateList.length());
 				predictedRateList = new SparseVector(predictedRateList.length());
@@ -428,6 +428,10 @@ public class EvaluationMetrics {
 	public static String printTitle() {
 		return "=============================================================================================================\r\nName\tPreci.\tRecall\tF1 \tMAE\tRMSE\tAsymm\tHLU\tNDCG\tKendall\tSpear";
 	}
+	
+	public static String printTitleWithLongName() {
+    return "=============================================================================================================\r\nName\t\tPreci.\tRecall\tF1 \tMAE\tRMSE\tAsymm\tHLU\tNDCG\tKendall\tSpear";
+  }
 	
 	public static String printRankTitle() {
 		return "===================================================================================================================\r\nName\tLogs\tLog1\tLog2\tAbs\tSqr\tExpReg\tSmL1\tHinge1\tHinge2\t0/1";
