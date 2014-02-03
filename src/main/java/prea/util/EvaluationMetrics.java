@@ -280,8 +280,8 @@ public class EvaluationMetrics {
 					testItemCount++;
 					
 					// Precision / Recall / F1Measure
-					boolean predictValue = predictedRate >= 4 ? true : false;
-					boolean actualValue = realRate >= 4 ? true : false;
+					boolean predictValue = predictedRate > 3 ? true : false;
+					boolean actualValue = realRate > 3 ? true : false;
 					irEval.addInstance(predictValue, actualValue);
 					
 					// Half-life evaluation:

@@ -623,15 +623,16 @@ public class Prea {
 						String token = st.nextToken().trim();
 
 						// movieID starting from 1.
-						int movieID, rate; 						
+						int movieID;
+						double rate; 						
 						movieID = indexMap[index];
-						rate = Integer.parseInt(token);
+						rate = Double.parseDouble(token);
 						
 						if (rate > maxValue) {
-							maxValue = rate;
+							maxValue = (int) Math.round(rate);
 						}
 						else if (rate < minValue) {
-							minValue = rate;
+							minValue = (int) Math.round(rate);
 						}
 						
 						(itemRateCount[movieID])++;
